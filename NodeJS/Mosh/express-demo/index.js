@@ -31,7 +31,7 @@ app.post('/api/courses',(req,res) => {
     
     //joi schema
     const schema = Joi.object({
-        name: Joi.string().min(3).required(),
+        name: Joi.string().min(3).required()
       });
      
       const result = schema.validate(req.body);
