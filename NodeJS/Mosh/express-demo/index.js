@@ -1,9 +1,25 @@
 const Joi = require('joi');
 const express = require('express');
 const req = require('express/lib/request');
+const logger = require('./logger.js');
 const app = express();
 
 app.use(express.json());
+
+//middleware from module
+app.use(logger);
+
+//custom middleware
+// app.use(function(req,res,next) {
+//     console.log('Logging....');
+//     next();
+// });
+
+//custom middleware
+app.use(function(req,res,next) {
+    console.log('Authenticating...');
+    next();
+});
 
 const courses = [
     {id:1,name:'Node.JS'},
