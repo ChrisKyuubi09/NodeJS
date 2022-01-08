@@ -2,13 +2,19 @@ const Joi = require('joi');
 const express = require('express');
 const req = require('express/lib/request');
 const logger = require('./logger.js');
+const authenticator = require('./authenticator.js');
+const helmet = require('helmet');
+const morgan = require('morgan');
 const app = express();
 
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(express.static('public'));
+
 
 //middleware from module
 app.use(logger);
-
+app.use(authenticator);
 //custom middleware
 // app.use(function(req,res,next) {
 //     console.log('Logging....');
@@ -16,10 +22,14 @@ app.use(logger);
 // });
 
 //custom middleware
-app.use(function(req,res,next) {
-    console.log('Authenticating...');
-    next();
-});
+// app.use(function(req,res,next) {
+//     console.log('Authenticating...');
+//     next();
+// });
+
+//Third party middleware
+app.use(helmet());
+app.use(morgan('tiny'));
 
 const courses = [
     {id:1,name:'Node.JS'},
