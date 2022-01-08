@@ -1,3 +1,4 @@
+const config = require('config');
 const Joi = require('joi');
 const express = require('express');
 const req = require('express/lib/request');
@@ -137,3 +138,14 @@ function validateCourse(course){
       const result = schema.validate(course);
       return result;
 }
+
+///Env
+if(app.get('env') === 'development'){
+    app.use(morgan('tiny'));
+    console.log('Morgan enabled...');
+}
+
+////////Config
+console.log('Application Name:' + config.get('name'));
+console.log('Application Name:' + config.get('mail.host'));
+console.log('Application Name:' + config.get('mail.password'));
