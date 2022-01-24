@@ -5,27 +5,46 @@ mongoose.connect('mongodb://localhost/playground')
     .catch(err => console.error('Could not connect to mongoDb',err));
 
 const courseSchema = new mongoose.Schema({
-    name:String,
+    name: { 
+      type: String , 
+      required: true,
+        minlength:5,
+        maxlength: 255
+       },
+    category: {
+      type: String,
+      required: true,
+      enum: ['web','mobile','network']
+    },
     author:String,
     tags:[String],
     date:{type:Date,default: Date.now},
-    isPublished:Boolean
-});
+    isPublished:Boolean,
+    price: { type: Number, required: function() {return this.isPublished} }
+   });
 
-// async function createCourse() {
-//     const Course = mongoose.model('Course',courseSchema);
-//     const course = new Course({
-//         name:'Angular',
-//         author:'Chris',
-//         tags:['node','background'],
-//         isPublished:true
-//     });
+async function createCourse() {
+    const Course = mongoose.model('Course',courseSchema);
+    const course = new Course({
+        name:'Angular',
+        author:'Chris',
+        tags:['node','background'],
+        isPublished:true,
+        category: '-'
+    });
+
+    try{
+      // const result = await course.save();
+      // console.log(result);
+      await course.validate();
+    }
+    catch (ex){
+      console.log(ex.message);
+    }
     
-//     const result = await course.save();
-//     console.log(result);
-// }
+}
 
-// createCourse();
+createCourse();
 
 async function getCourses() {
     const Course = mongoose.model('Course',courseSchema);
@@ -129,14 +148,25 @@ update('5a68fde3f09ad7646ddec17e');
 
 async function updateFirst(id) {
   const Course = mongoose.model('Course',courseSchema);
-  const result = await Course.findByIdAndUpdate(id,{
+  const course = await Course.findByIdAndUpdate(id,{
     $set: {
-      author:'Jason',
+      author:'Mosh',
       isPublished: false
     }
   }, { new: true });
 
-  console.log(result);
+  console.log(course);
 }
 
-updateFirst('5a68fde3f09ad7646ddec17e');
+updateFirst('61e0111ce8a5dad9b1187a18');
+
+/////////////////////////////////////////////
+
+async function removeCourse(id) {
+  const Course = mongoose.model('Course',courseSchema);
+  //const course = await Course.deleteOne({ _id:id });
+  const course = await Course.findByIdAndRemove(id);
+  console.log(course);
+}
+
+removeCourse('61e0111ce8a5dad9b1187a18')
