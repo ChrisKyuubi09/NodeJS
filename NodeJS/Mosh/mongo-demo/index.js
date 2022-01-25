@@ -14,13 +14,31 @@ const courseSchema = new mongoose.Schema({
     category: {
       type: String,
       required: true,
-      enum: ['web','mobile','network']
+      enum: ['web','mobile','network'],
+      lowercase: true,
+      trim: true
     },
     author:String,
-    tags:[String],
+    tags: {
+      type: Array,
+      validate: {
+        isAsync: true,
+        validator: function(v,callback) {
+          setTimeout( () => {
+            const result = v && v.maxlength > 0;
+          },4000 );
+        },
+        message: 'A course should hace at least one tag.'
+      }
+    },
     date:{type:Date,default: Date.now},
     isPublished:Boolean,
-    price: { type: Number, required: function() {return this.isPublished} }
+    price: { 
+      type: Number, 
+      required: function() {return this.isPublished},
+      get: v => Math.round(v), 
+      set: v => Math.round(v)
+    }
    });
 
 async function createCourse() {
@@ -30,7 +48,8 @@ async function createCourse() {
         author:'Chris',
         tags:['node','background'],
         isPublished:true,
-        category: '-'
+        category: 'Web',
+        price: 15.8
     });
 
     try{
@@ -39,7 +58,10 @@ async function createCourse() {
       await course.validate();
     }
     catch (ex){
-      console.log(ex.message);
+      //console.log(ex.message);
+      for (field in ex.errors){
+        console.log(ex.errors[field].message);
+      }
     }
     
 }

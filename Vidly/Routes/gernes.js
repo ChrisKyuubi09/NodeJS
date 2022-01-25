@@ -1,26 +1,36 @@
-const Joi = require('joi');
 const express = require('express');
-const { parse } = require('ipaddr.js');
-const app = express();
-const api = '/api/gernes/';
+const router = express.Router();
+const mongoose = require('mongoose');
 
-app.use(express.json());
+const gerneSchema = new mongoose.Schema({
+    name: {
+        type:String,
+        required: true,
+        minlength: 5,
+        maxlength: 50
+    }
+});
 
-const gernes = [
-    {id:1,gerne:'Action'},
-    {id:2,gerne:'Thriller'},
-    {id:3,gerne:'Comedy'},
-    {id:4,gerne:'Drama'},
-    {id:5,gerne:'Korean'}
-];
+const Gerne = new mongoose.model('Gerne',gerneSchema);
+
+// const gernes = [
+//     {id:1,gerne:'Action'},
+//     {id:2,gerne:'Thriller'},
+//     {id:3,gerne:'Comedy'},
+//     {id:4,gerne:'Drama'},
+//     {id:5,gerne:'Korean'}
+// ];
 
 
 //GET
-app.get(api,(req,res) => {
+router.get('/', async (req,res) => {
+    const Gerne = new mongoose.model('Gerne',gerneSchema);
+    const gernes = await Gerne.find()
+                              .sort( {name:1} );
     res.send(gernes);
 });
 
-app.get(`${api}:gerneId`,(req,res) => {
+router.get(`/`,(req,res) => {
     //Lookup in gernes
     const gerne = gernes.find( g => g.id === parseInt(req.params.gerneId));
     //if not 404
@@ -30,25 +40,25 @@ app.get(`${api}:gerneId`,(req,res) => {
 });
 
 //POST
-app.post(api,(req,res) => {
+router.post('/',(req,res) => {
     //Read gerne from body
     const {error} = validation(req.body);
     //check if null
     if(error) return res.status(404).send(error.details[0].message);
     
     //
-    const newGerne = {
-        id: gernes.length + 1,
+    let newGerne = new Gerne ({
         gerne: req.body.gerne
-    };
+    });
 
-    gernes.push(newGerne);
+    //gernes.push(newGerne);
+    gerne = await gerne.save();
 
     res.send(newGerne);
 });
 
 //PUT
-app.put(`${api}:id`,(req,res) => {
+router.put(`/:id`,(req,res) => {
     const gerne = gernes.find( g=>g.id === parseInt(req.params.id));
     if(!gerne) return res.status(404).send('Not found');
 
@@ -61,7 +71,7 @@ app.put(`${api}:id`,(req,res) => {
 });
 
 //DELETE
-app.delete(`${api}:id`,(req,res) => {
+router.delete(`/:id`,(req,res) => {
     const gerne = gernes.find( g=>g.id === parseInt(req.params.id));
 
     if(!gerne) return res.status(404).send('Not found');
@@ -72,9 +82,6 @@ app.delete(`${api}:id`,(req,res) => {
      res.send(gerne);
 });
 
-//Raise the events
-const port = process.env.PORT || 3000;
-app.listen(port,() => {console.log(`Listening on port ${port}...`)});
 
 //Validation Function
 function validation(gerne){
@@ -85,3 +92,5 @@ function validation(gerne){
     const result = schema.validate(gerne);
     return result;
 }
+
+module.exports = router;
