@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
+const Joi = require('Joi');
 
 const gerneSchema = new mongoose.Schema({
     name: {
@@ -11,7 +12,7 @@ const gerneSchema = new mongoose.Schema({
     }
 });
 
-const Gerne = new mongoose.model('Gerne',gerneSchema);
+const Gerne = mongoose.model('Gerne',gerneSchema);
 
 // const gernes = [
 //     {id:1,gerne:'Action'},
@@ -24,15 +25,15 @@ const Gerne = new mongoose.model('Gerne',gerneSchema);
 
 //GET
 router.get('/', async (req,res) => {
-    const Gerne = new mongoose.model('Gerne',gerneSchema);
+    const Gerne = mongoose.model('Gerne',gerneSchema);
     const gernes = await Gerne.find()
                               .sort( {name:1} );
     res.send(gernes);
 });
 
-router.get(`/`,(req,res) => {
-    //Lookup in gernes
-    const gerne = gernes.find( g => g.id === parseInt(req.params.gerneId));
+router.get(`/:id`,async (req,res) => {
+    const Gerne = mongoose.model('Gerne',gerneSchema);
+    const gerne = await Gerne.findById(req.params.id);
     //if not 404
     if(!gerne) return res.status(404).send(`${res.params.gerneId} was not found`);
     //send gerne
@@ -40,56 +41,56 @@ router.get(`/`,(req,res) => {
 });
 
 //POST
-router.post('/',(req,res) => {
+router.post('/',async (req,res) => {
     //Read gerne from body
     const {error} = validation(req.body);
     //check if null
-    if(error) return res.status(404).send(error.details[0].message);
+    if(error) return res.status(400).send(error.details[0].message);
     
     //
-    let newGerne = new Gerne ({
-        gerne: req.body.gerne
+    let gerne = new Gerne ({
+        name: req.body.name
     });
 
     //gernes.push(newGerne);
     gerne = await gerne.save();
 
-    res.send(newGerne);
+    res.send(gerne);
 });
 
 //PUT
-router.put(`/:id`,(req,res) => {
-    const gerne = gernes.find( g=>g.id === parseInt(req.params.id));
-    if(!gerne) return res.status(404).send('Not found');
+router.put(`/:id`,async (req,res) => {
+    const Gerne = mongoose.model('Gerne',gerneSchema);
 
     const {error} = validation(req.body);
-
     if(error) return res.status(400).send('Bad Request');
 
-    gerne.gerne = req.body.gerne;
+   
+    const gerne = await Gerne.findByIdAndUpdate(req.params.id,{ name: req.body.name }, {new:true} );
+
+    if(!gerne) return res.status(404).send('Not found');
+
     res.send(gerne);
 });
 
 //DELETE
-router.delete(`/:id`,(req,res) => {
-    const gerne = gernes.find( g=>g.id === parseInt(req.params.id));
+router.delete(`/:id`,async (req,res) => {
+    const Gerne = mongoose.model('Gerne',gerneSchema);
+    const gerne = await Gerne.findByIdAndRemove(req.params.id);
 
     if(!gerne) return res.status(404).send('Not found');
-
-     const index = gernes.indexOf(gerne);
-     gernes.splice(index,1);
 
      res.send(gerne);
 });
 
 
 //Validation Function
-function validation(gerne){
+function validation(name){
     const schema = Joi.object({
-        gerne: Joi.string().min(1).required()
+        name: Joi.string().min(1).required()
     });
 
-    const result = schema.validate(gerne);
+    const result = schema.validate(name);
     return result;
 }
 
