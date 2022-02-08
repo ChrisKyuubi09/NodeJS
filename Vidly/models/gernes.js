@@ -22,5 +22,6 @@ function validation(name){
     return result;
 }
 
+exports.gerneSchema = gerneSchema;
 exports.Gerne = Gerne;
 exports.validate = validation;
