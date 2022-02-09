@@ -5,6 +5,7 @@ const app = express();
 const gernes = require('./Routes/gernes.js');
 const customers = require('./Routes/customer.js');
 const movies = require('./Routes/movies.js');
+const rentals = require('./Routes/rentals.js');
 const mongoose = require('mongoose');
 
 mongoose.connect('mongodb://localhost/vidly')
@@ -16,6 +17,7 @@ app.use(express.json());
 app.use('/api/gernes',gernes);
 app.use('/api/customers',customers);
 app.use('/api/movies',movies);
+app.use('/api/rentals',rentals);
 
 //Raise the events
 const port = process.env.PORT || 3000;
