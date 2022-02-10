@@ -5,6 +5,12 @@ const {Rental,validate} = require('../models/rentals.js');
 const {Movie} = require('../models/movies.js');
 const {Customer} = require('../models/customer.js');
 const res = require('express/lib/response');
+const Transaction = require('mongoose-transactions');
+
+const transaction = new Transaction();
+//const Fawn = require('fawn');
+
+//Fawn.init(mongoose);
 
 router.get('/',async (req,res) => {
     const rentals = await Rental.find().sort({ name: 1 });
@@ -39,8 +45,18 @@ router.post('/', async (req,res) => {
 
     movie.numberInStock--;
     movie.save();
-    res.send(rental);
 
+    try {
+        transaction.insert('rentals', rental);
+        transaction.update('movies', movie._id, { $inc: { numberInStock: -1 } });
+        await transaction.run();
+     
+        res.send(rental);
+    }
+    catch(ex){
+       res.status(500).send('Something failed'); 
+    }
+    //res.send(rental);
 });
 
 module.exports = router;
