@@ -6,6 +6,8 @@ const { Router } = require('express');
 const {User,validate} = require('../models/users.js');
 const _ = require('lodash')
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+const config = require('config');
 
 router.post('/',async(req,res) => {
     const {error} = validate(req.body);
@@ -25,7 +27,8 @@ router.post('/',async(req,res) => {
 
     user = await user.save();
 
-    res.send(_.pick(user, ['name','email']));
+    const token = user.generateAuthToken();
+    res.header('x-auth-token',token).send(_.pick(user, ['name','email']));
 });
 
 router.get('/', async (req,res) => {

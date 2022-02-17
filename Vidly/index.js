@@ -9,6 +9,13 @@ const rentals = require('./Routes/rentals.js');
 const mongoose = require('mongoose');
 const user = require('./Routes/users.js');
 const auth = require('./Routes/auths.js');
+const config = require('config')
+
+if(!config.get('jwtSecret'))
+{
+        console.log('Private key is not defined!!!');
+        process.exit(1);
+}
 
 mongoose.connect('mongodb://localhost/vidly')
         .then(() => console.log('Connecterd to DB...'))
