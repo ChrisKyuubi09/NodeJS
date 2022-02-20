@@ -3,6 +3,8 @@ const router = express.Router();
 const mongoose = require('mongoose');
 const Joi = require('Joi');
 const {Gerne,validate} = require(`../models/gernes.js`);
+const auth = require('../middleware/auth.js');
+const admin = require('../middleware/admin.js');
 
 //GET
 router.get('/', async (req,res) => {
@@ -22,7 +24,7 @@ router.get(`/:id`,async (req,res) => {
 });
 
 //POST
-router.post('/',async (req,res) => {
+router.post('/',auth,async (req,res) => {
     //Read gerne from body
     const {error} = validate(req.body);
     //check if null
@@ -55,7 +57,7 @@ router.put(`/:id`,async (req,res) => {
 });
 
 //DELETE
-router.delete(`/:id`,async (req,res) => {
+router.delete(`/:id`,[auth,admin],async (req,res) => {
     //const Gerne = mongoose.model('Gerne',gerneSchema);
     const gerne = await Gerne.findByIdAndRemove(req.params.id);
 

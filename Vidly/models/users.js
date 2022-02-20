@@ -18,11 +18,14 @@ const userSchema = new mongoose.Schema({
         type: String,
         minlength:3,
         required:true
+    },
+    isAdmin:{
+        type:Boolean
     }
 });
 
 userSchema.methods.generateAuthToken = function(){
-    const token = jwt.sign({_id: this._id}, config.get('jwtSecret') );
+    const token = jwt.sign({_id: this._id, isAdmin:this.isAdmin}, config.get('jwtSecret') );
     return token;
 };
 
